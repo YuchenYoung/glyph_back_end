@@ -1,0 +1,7 @@
+__pycache__
+*.log
+*.pid
+*.ini
+.vscode
+.DS_Store
+.idea
