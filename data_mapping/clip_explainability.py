@@ -7,6 +7,7 @@ import cv2
 import matplotlib.pyplot as plt
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
+from . import KM
 
 
 #@title Control context expansion (number of attention layers to consider)
@@ -122,8 +123,8 @@ def save_imgs(svg_list):
         renderPM.drawToFile(drawing, cur_png_dir, fmt='PNG')     
 
 
+'''
 def map_data(header, img_num, rel_matrix):
-    print(rel_matrix)
     header_mapped = np.zeros(len(header), dtype=np.int)
     svg_mapped = np.zeros(img_num, dtype=np.int)
     map_res = {}
@@ -158,6 +159,8 @@ def map_data(header, img_num, rel_matrix):
                 break
     print(map_res)
     return map_res
+'''
+
 
 def clip_main(content, header, svg_list):
     texts = []
@@ -184,5 +187,12 @@ def clip_main(content, header, svg_list):
             axs[i-1,j].text(0.5, 0.1, img_rel, horizontalalignment='center', verticalalignment='center', transform=axs[i-1,j].transAxes)
             axs[i-1,j].set_title(header[j])
     
-    return map_data(header, svg_part + 1, rel_matrix)
+    # return map_data(header, svg_part + 1, rel_matrix)
+    print(rel_matrix.T)
+    match_arr = KM.km_algo(rel_matrix.T)
+    map_res = {}
+    for i in range(len(header)):
+        map_res[header[i]] = int(match_arr[i]) - 1
+    print(map_res)
+    return map_res
     

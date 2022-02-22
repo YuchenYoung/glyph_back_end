@@ -5,3 +5,5 @@ __pycache__
 .vscode
 .DS_Store
 .idea
+data_mapping/CLIP/svg/*.png
+data_mapping/CLIP/svg/*.svg
