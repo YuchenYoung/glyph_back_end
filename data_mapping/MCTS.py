@@ -85,7 +85,10 @@ class MCTSTree(object):
         while len(cur.children) > 0:
             cur = cur.get_best_child()
             op_list.append(cur.option)
-        return op_list
+        value = 0
+        for i in range(steps):
+            value += scores[i] * rel_mat[op_list[i]][i]
+        return op_list, value
 
     def search(self):
         for i in range(self.max_round):
