@@ -36,9 +36,9 @@ def mapping_multi(request):
     svgs_list = front_data.get("svgsList")
     content = front_data.get("content")
     # mapper = data_mapping.data_mapping_km(content, data_props[1:], [], svg_list)
-    best_img, mapper = data_mapping.data_mapping_multi(content, data_props[1:], [], svgs_list)
+    best_img, score, mapper = data_mapping.data_mapping_multi(content, data_props[1:], [], svgs_list)
     # mapper = { "status": 'reveived'}
-    res = {"best_img": best_img, "mapper": mapper}
+    res = {"best_img": best_img, "score": score, "mapper": mapper}
     response = HttpResponse(json.dumps(res))
     response["Access-Control-Allow-Origin"] = "*"
     return response

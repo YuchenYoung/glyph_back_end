@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer, util
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
-def get_theme_props_similaruty(theme, props):
+def get_theme_props_similarity(theme, props):
     # Two lists of sentences
     sentences1 = props
 
