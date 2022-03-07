@@ -3,6 +3,7 @@ from . import semantic_similarity
 from . import MCTS
 from . import KM
 import math
+import time
 
 
 def fill_in_nan(matrix):
@@ -16,9 +17,9 @@ def fill_in_nan(matrix):
 def format_mapping(props, matches, similarity, rel_mat):
     print(matches)
     mapping_res = []
-    for i in range(len(props)):
+    for i in range(len(matches)):
         if matches[i] >= rel_mat.shape[0]:
-            return []
+            continue
         mapping_res.append({
             "prop": props[i],
             "element": matches[i],
@@ -31,7 +32,7 @@ def format_mapping(props, matches, similarity, rel_mat):
 
 def data_mapping_km(theme, props, types, svgs):
     rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, props, svgs))
-    similarity = semantic_similarity.get_theme_props_similarity(theme, props)
+    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props)
     print('======== in data mapping km =======')
     print(props)
     print(similarity)
@@ -52,7 +53,7 @@ def data_mapping_km(theme, props, types, svgs):
 
 def data_mapping_main(theme, props, types, svgs):
     rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, props, svgs))
-    similarity = semantic_similarity.get_theme_props_similarity(theme, props)
+    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props)
     print('======== in data mapping main =======')
     print(props)
     print(similarity)
@@ -66,25 +67,42 @@ def data_mapping_main(theme, props, types, svgs):
 
 
 def data_mapping_multi(theme, props, types, svgs_list):
-    similarity = semantic_similarity.get_theme_props_similarity(theme, props)
+    print('====== now calculate similarity =======')
+    t_semantic_before = time.perf_counter()
+    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props)
+    t_semantic_after = time.perf_counter()
     print('======== in data mapping multi =======')
     print(props)
     print(similarity)
     max_score = -1000
     max_svgs = -1
     # max_ops = []
+    all_mapping = []
+    all_score = []
     best_mapping = []
+    semantic_time = t_semantic_after - t_semantic_before
+    cal_time = []
     for i in range(len(svgs_list)):
         print(f"now is image {i}")
-        rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, props, svgs_list[i]))
+        cur_similarity = similarity[:int(len(svgs_list[i])*1.2)]
+        cur_props = props[:int(len(svgs_list[i])*1.2)]
+        t_matrix_before = time.perf_counter()
+        rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, cur_props, svgs_list[i]))
+        t_matrix_after = time.perf_counter()
         print(rel_matrix)
-        match_eles, score = MCTS.mcts_search(similarity, rel_matrix)
+        t_match_before = time.perf_counter()
+        match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix)
+        t_match_after = time.perf_counter()
         print(f'{i} {score}')
-        cur_mapping = format_mapping(props, match_eles, similarity, rel_matrix)
+        cur_mapping = format_mapping(cur_props, match_eles, cur_similarity, rel_matrix)
+        all_mapping.append(cur_mapping)
+        all_score.append(score)
         if max_score < score and len(cur_mapping) > 0:
             # max_ops = match_eles
             max_svgs = i
             max_score = score
             best_mapping = cur_mapping
         print(f"now finish {i}")
-    return max_svgs, max_score, best_mapping
+        cal_time.append([semantic_time, t_matrix_after - t_matrix_before, t_match_after - t_match_before])
+        semantic_time = 0
+    return max_svgs, max_score, best_mapping, all_score, all_mapping, cal_time

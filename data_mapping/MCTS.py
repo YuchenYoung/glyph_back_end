@@ -32,7 +32,7 @@ class Node(object):
 class MCTSTree(object):
     def __init__(self):
         self.root = Node()
-        self.max_round = 500
+        self.max_round = 2000
 
     def selection(self):
         cur = self.root
@@ -43,8 +43,11 @@ class MCTSTree(object):
         return cur
 
     def expansion(self, node):
-        used_ops = node.fin_options + list(map(lambda u: u.option, node.children))
-        av_ops = list(filter(lambda u: u not in used_ops, range(options)))
+        children_used = list(map(lambda u: u.option, node.children))
+        used_ops = node.fin_options + children_used
+        av_ops = list(filter(lambda u: u not in used_ops, range(options + 1)))
+        if options not in children_used and options not in av_ops:
+            av_ops.append(options)
         new_op = av_ops[random.randint(0, len(av_ops) - 1)]
         new_node = Node()
         new_node.parent = node
@@ -57,11 +60,19 @@ class MCTSTree(object):
         op_list = list(node.fin_options)
         while len(op_list) <= steps:
             av_ops = list(filter(lambda u: u not in op_list, range(options)))
+            av_ops.append(options)
             new_op = av_ops[random.randint(0, len(av_ops) - 1)]
             op_list.append(new_op)
         value = 0
+        match_cnt = 0
         for i in range(steps):
-            value += scores[i] * rel_mat[op_list[i]][i]
+            if op_list[i] < options:
+                match_cnt += 1
+                value += scores[i] * rel_mat[op_list[i]][i]
+        if match_cnt > 2:
+            value /= match_cnt
+        else:
+            value = 0
         return value
 
     def back_propagation(self, node, value):
@@ -86,8 +97,15 @@ class MCTSTree(object):
             cur = cur.get_best_child()
             op_list.append(cur.option)
         value = 0
-        for i in range(steps):
-            value += scores[i] * rel_mat[op_list[i]][i]
+        match_cnt = 0
+        for i in range(len(op_list)):
+            if op_list[i] < options:
+                match_cnt += 1
+                value += scores[i] * rel_mat[op_list[i]][i]
+        if match_cnt > 2:
+            value /= match_cnt
+        else:
+            value = 0
         return op_list, value
 
     def search(self):
