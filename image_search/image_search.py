@@ -1,5 +1,6 @@
 import os
 from .google_images_download import google_images_download
+from . import svgrepo_search
 
 
 def save_cached_result(words, url_list):
@@ -40,3 +41,7 @@ def get_google_result(words, img_num):
 def get_search_result(words, img_num):
     # return get_google_result(words, img_num)
     return get_cached_result(words, img_num)
+
+
+def search_svgs(words, img_num):
+    return svgrepo_search.get_svgrepo_svgs(words, img_num)

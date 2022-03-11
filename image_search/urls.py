@@ -3,5 +3,6 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    path('', views.searchImages)
+    path('', views.searchImages),
+    path('svg/', views.searchSvgs)
 ]
