@@ -1,6 +1,8 @@
+import os
 from sentence_transformers import SentenceTransformer, util
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
+# model = SentenceTransformer('all-MiniLM-L6-v2')
+model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'all-MiniLM-L6-v2')
+model = SentenceTransformer(model_dir)
 
 def normalize_and_sort(lst, props):
     min_val = -1

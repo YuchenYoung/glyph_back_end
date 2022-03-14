@@ -3,8 +3,9 @@ import random
 import math
 import numpy as np
 
-global scores, rel_mat, steps, options
+global scores, rel_mat, steps, options, groups, levels
 para_c = 2
+
 
 class Node(object):
     def __init__(self):
@@ -32,7 +33,7 @@ class Node(object):
 class MCTSTree(object):
     def __init__(self):
         self.root = Node()
-        self.max_round = 2000
+        self.max_round = 20000
 
     def selection(self):
         cur = self.root
@@ -67,8 +68,14 @@ class MCTSTree(object):
         match_cnt = 0
         for i in range(steps):
             if op_list[i] < options:
+                rel = rel_mat[op_list[i]][levels[i]]
+                if i < len(groups):
+                    rel = 0
+                    for t in range(len(groups[i])):
+                        rel += rel_mat[op_list[i]][groups[i][t]]
+                    rel /= len(groups[i])
                 match_cnt += 1
-                value += scores[i] * rel_mat[op_list[i]][i]
+                value += scores[i] * rel
         if match_cnt > 2:
             value /= match_cnt
         else:
@@ -114,15 +121,25 @@ class MCTSTree(object):
         return self.get_options()
 
 
-def mcts_init(p_scores, p_rel_mat):
-    global scores, rel_mat, steps, options
+def mcts_init(p_scores, p_rel_mat, p_groups):
+    global scores, rel_mat, steps, options, groups, levels
     scores = p_scores
     rel_mat = p_rel_mat
-    steps = len(scores)
+    groups = p_groups
+    levels = []
+    group_props = []
+    for i in range(len(groups)):
+        levels.append(0)
+        group_props += groups[i]
+    for i in range(len(scores)):
+        if i not in group_props:
+            levels.append(i)
+    steps = len(levels)
     options = len(rel_mat)
+    print(levels)
 
 
-def mcts_search(p_scores, p_rel_mat):
-    mcts_init(p_scores, p_rel_mat)
+def mcts_search(p_scores, p_rel_mat, p_groups):
+    mcts_init(p_scores, p_rel_mat, p_groups)
     mcts_tree = MCTSTree()
     return mcts_tree.search()

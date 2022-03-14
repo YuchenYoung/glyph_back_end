@@ -7,3 +7,4 @@ __pycache__
 .idea
 data_mapping/CLIP/svg/*.png
 data_mapping/CLIP/svg/*.svg
+image_search/cached_svgs/
