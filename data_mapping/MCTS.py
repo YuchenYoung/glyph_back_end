@@ -14,6 +14,7 @@ class Node(object):
         self.value = 0
         self.visit_times = 0
         self.option = 0
+        self.axis = 0
         self.fin_options = []
 
     def ucb(self):
@@ -49,20 +50,31 @@ class MCTSTree(object):
         av_ops = list(filter(lambda u: u not in used_ops, range(options + 1)))
         if options not in children_used and options not in av_ops:
             av_ops.append(options)
+        if 0 not in av_ops and node.axis < 2:
+            av_ops.append(0)
         new_op = av_ops[random.randint(0, len(av_ops) - 1)]
         new_node = Node()
         new_node.parent = node
         new_node.option = new_op
         new_node.fin_options = node.fin_options + [new_op]
+        if new_op == 0:
+            new_node.axis = node.axis + 1
+        else:
+            new_node.axis = node.axis
         node.children.append(new_node)
         return new_node
 
     def simulation(self, node):
         op_list = list(node.fin_options)
+        axis = node.axis
         while len(op_list) <= steps:
             av_ops = list(filter(lambda u: u not in op_list, range(options)))
             av_ops.append(options)
+            if 0 not in av_ops and axis < 2:
+                av_ops.append(0)
             new_op = av_ops[random.randint(0, len(av_ops) - 1)]
+            if new_op == 0:
+                axis += 1
             op_list.append(new_op)
         value = 0
         match_cnt = 0

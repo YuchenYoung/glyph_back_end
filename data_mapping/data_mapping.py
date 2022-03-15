@@ -81,10 +81,10 @@ def data_mapping_main(theme, props, types, svgs):
     return mapping_res
 
 
-def data_mapping_multi(theme, props, group_props, svgs_list):
+def data_mapping_multi(theme, props, group_props, types, svgs_list):
     print('====== now calculate similarity =======')
     t_semantic_before = time.perf_counter()
-    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props)
+    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
     t_semantic_after = time.perf_counter()
     groups = []
     for lst in group_props:
@@ -111,6 +111,9 @@ def data_mapping_multi(theme, props, group_props, svgs_list):
         cur_props = props
         t_matrix_before = time.perf_counter()
         rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, cur_props, svgs_list[i]))
+        for j in range(len(props)):
+            if types[props[j]] == 'time' or types[props[j]] == 'geography':
+                rel_matrix[0][j] = 1.0
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()
