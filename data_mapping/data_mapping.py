@@ -81,7 +81,7 @@ def data_mapping_main(theme, props, types, svgs):
     return mapping_res
 
 
-def data_mapping_multi(theme, props, group_props, types, svgs_list):
+def data_mapping_multi(theme, props, group_props, types, svgs_list, mapped):
     print('====== now calculate similarity =======')
     t_semantic_before = time.perf_counter()
     similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
@@ -103,6 +103,13 @@ def data_mapping_multi(theme, props, group_props, types, svgs_list):
     best_mapping = []
     semantic_time = t_semantic_after - t_semantic_before
     cal_time = []
+    mapped_idx = []
+    for it in mapped:
+        if it['is_group'] == True:
+            mapped_idx.append({"level": int(it['prop']), "ele": int(it['ele']), "is_group": True})
+        else:
+            mapped_idx.append({"level": props.index(it['prop']), "ele": int(it['ele']), "is_group": False})
+
     for i in range(len(svgs_list)):
         print(f"now is image {i}")
         # cur_similarity = similarity[:int(len(svgs_list[i])*1.2)]
@@ -117,7 +124,7 @@ def data_mapping_multi(theme, props, group_props, types, svgs_list):
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()
-        match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups)
+        match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups, mapped_idx)
         t_match_after = time.perf_counter()
         print(f'{i} {score}')
         cur_mapping = format_mapping(cur_props, group_props, match_eles, cur_similarity, rel_matrix)

@@ -36,8 +36,9 @@ def mapping_multi(request):
     svgs_list = front_data.get("svgsList")
     content = front_data.get("content")
     groups = front_data.get("groups")
+    mapped = front_data.get("mapped")
     # mapper = data_mapping.data_mapping_km(content, data_props[1:], [], svg_list)
-    best_img, score, mapper, scores, mappers, times  = data_mapping.data_mapping_multi(content, data_props[1:], groups, data_types, svgs_list)
+    best_img, score, mapper, scores, mappers, times  = data_mapping.data_mapping_multi(content, data_props[1:], groups, data_types, svgs_list, mapped)
     # mapper = { "status": 'reveived'}
     res = {
         "best_img": best_img, 
