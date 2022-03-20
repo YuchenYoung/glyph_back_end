@@ -34,14 +34,34 @@ class Node(object):
 class MCTSTree(object):
     def __init__(self):
         self.root = Node()
-        self.max_round = 20000
+        self.max_round = 100000
+
+    def judge_to_expansion(self, node, cur_level):
+        if cur_level < len(mapped_levels) and mapped_levels[cur_level] >= 0:
+            return len(node.children) == 0
+        children_used = list(map(lambda u: u.option, node.children))
+        used_ops = node.fin_options + children_used
+        st = 0
+        if cur_level < len(groups):
+            st = 1
+        av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(st, options + 1)))
+        if options not in children_used and options not in av_ops:
+            av_ops.append(options)
+        if cur_level >= len(groups)  and 0 not in children_used and 0 not in av_ops and node.axis < 2:
+            av_ops.append(0)
+        return len(av_ops) > 0
 
     def selection(self):
         cur = self.root
         while True:
             cur_level = len(cur.fin_options)
-            if len(cur.children) == 0 or (
-                    mapped_levels[cur_level] < 0 and len(cur.children) + len(cur.fin_options) < options):
+            # cur_options = options
+            # if cur_level < len(groups):
+            #     cur_options -= 1
+            # if len(cur.children) == 0 or (
+            #         mapped_levels[cur_level] < 0 and len(cur.children) + len(cur.fin_options) < cur_options):
+            #     break
+            if self.judge_to_expansion(cur, cur_level):
                 break
             cur = cur.get_best_child()
         return cur
@@ -58,7 +78,7 @@ class MCTSTree(object):
             av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(st, options + 1)))
             if options not in children_used and options not in av_ops:
                 av_ops.append(options)
-            if cur_level >= len(groups) and 0 not in av_ops and node.axis < 2:
+            if cur_level >= len(groups) and 0 not in children_used and 0 not in av_ops and node.axis < 2:
                 av_ops.append(0)
             new_op = av_ops[random.randint(0, len(av_ops) - 1)]
         new_node = Node()
@@ -134,7 +154,14 @@ class MCTSTree(object):
         for i in range(len(op_list)):
             if op_list[i] < options:
                 match_cnt += 1
-                value += scores[i] * rel_mat[op_list[i]][i]
+                if i < len(groups):
+                    group_val = 0
+                    for j in range(len(groups[i])):
+                        group_val += scores[groups[i][j]] * rel_mat[op_list[i]][groups[i][j]]
+                    group_val /= len(groups[i])
+                    value += group_val
+                else:
+                    value += scores[i] * rel_mat[op_list[i]][i]
         if match_cnt > 2:
             value /= match_cnt
         else:
@@ -143,6 +170,7 @@ class MCTSTree(object):
 
     def search(self):
         for i in range(self.max_round):
+            # print(i)
             self.single_search()
         return self.get_options()
 

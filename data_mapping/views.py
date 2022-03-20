@@ -17,15 +17,7 @@ def props_similarity(request):
     theme = front_data.get("theme")
     groups = front_data.get("groups")
 
-    print('get the data')
-    print(props)
-    print(data_types)
-    print(theme)
-    print(groups)
-
     props, similarity, dic_similarity = data_mapping.get_similarity(theme, props[1:], groups, data_types);
-    
-    print('finish similarity')
     res_dic = {
         'props': props,
         'similarity': similarity,

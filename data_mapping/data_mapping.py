@@ -16,13 +16,7 @@ def fill_in_nan(matrix):
 
 
 def get_similarity(theme, props, groups, types):
-    print('now in function get')
-    print(theme)
-    print(props)
-    print(groups)
-    print(types)
     similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
-    print('now finish getting')
     print(props)
     print(similarity)
     dic_similarity = {}
