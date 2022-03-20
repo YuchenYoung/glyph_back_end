@@ -138,6 +138,10 @@ def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, 
         for j in range(len(props)):
             if types[props[j]] == 'time' or types[props[j]] == 'geography':
                 rel_matrix[0][j] = 1.0
+            elif "Item" in props[j] or "Object" in props[j]:
+                rel_matrix[0][j] = 1.0
+            else:
+                rel_matrix[0][j] = 0.00
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()

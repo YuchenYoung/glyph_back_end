@@ -3,7 +3,7 @@ import random
 import math
 import numpy as np
 
-global scores, rel_mat, steps, options, groups, levels, mapped_levels, mapped_eles
+global scores, rel_mat, steps, options, groups, levels, mapped_levels, mapped_eles, av_axis
 para_c = 1 / math.sqrt(2.0)
 
 
@@ -14,7 +14,7 @@ class Node(object):
         self.value = 0
         self.visit_times = 0
         self.option = 0
-        self.axis = 0
+        self.axis = 2 - av_axis
         self.fin_options = []
 
     def ucb(self):
@@ -25,7 +25,7 @@ class Node(object):
         max_val = -10000
         for it in self.children:
             cur_ucb = it.ucb()
-            if cur_ucb > max_val:
+            if cur_ucb >= max_val:
                 max_val = cur_ucb
                 best_child = it
         return best_child
@@ -41,19 +41,18 @@ class MCTSTree(object):
             return len(node.children) == 0
         children_used = list(map(lambda u: u.option, node.children))
         used_ops = node.fin_options + children_used
-        st = 0
-        if cur_level < len(groups):
-            st = 1
-        av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(st, options + 1)))
+        av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(1, options + 1)))
         if options not in children_used and options not in av_ops:
             av_ops.append(options)
-        if cur_level >= len(groups)  and 0 not in children_used and 0 not in av_ops and node.axis < 2:
+        if cur_level >= len(groups) and 0 not in children_used and node.axis < 2:
             av_ops.append(0)
         return len(av_ops) > 0
 
     def selection(self):
         cur = self.root
         while True:
+            if cur is None:
+                return None
             cur_level = len(cur.fin_options)
             # cur_options = options
             # if cur_level < len(groups):
@@ -72,13 +71,10 @@ class MCTSTree(object):
         if new_op < 0:
             children_used = list(map(lambda u: u.option, node.children))
             used_ops = node.fin_options + children_used
-            st = 0
-            if cur_level < len(groups):
-                st = 1
-            av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(st, options + 1)))
+            av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(1, options + 1)))
             if options not in children_used and options not in av_ops:
                 av_ops.append(options)
-            if cur_level >= len(groups) and 0 not in children_used and 0 not in av_ops and node.axis < 2:
+            if cur_level >= len(groups) and 0 not in children_used and node.axis < 2:
                 av_ops.append(0)
             new_op = av_ops[random.randint(0, len(av_ops) - 1)]
         new_node = Node()
@@ -99,12 +95,9 @@ class MCTSTree(object):
             cur_level = len(op_list)
             new_op = mapped_levels[cur_level]
             if new_op < 0:
-                st = 0
-                if cur_level < len(groups):
-                    st = 1
-                av_ops = list(filter(lambda u: u not in op_list and u not in mapped_eles, range(st, options)))
+                av_ops = list(filter(lambda u: u not in op_list and u not in mapped_eles, range(1, options)))
                 av_ops.append(options)
-                if cur_level >= len(groups) and 0 not in av_ops and axis < 2:
+                if cur_level >= len(groups) and axis < 2:
                     av_ops.append(0)
                 new_op = av_ops[random.randint(0, len(av_ops) - 1)]
             if new_op == 0:
@@ -137,7 +130,7 @@ class MCTSTree(object):
 
     def single_search(self):
         leaf = self.selection()
-        if len(leaf.fin_options) >= steps:
+        if leaf is None or len(leaf.fin_options) >= steps:
             return
         new_node = self.expansion(leaf)
         value = self.simulation(new_node)
@@ -176,7 +169,8 @@ class MCTSTree(object):
 
 
 def mcts_init(p_scores, p_rel_mat, p_groups, p_mapped):
-    global scores, rel_mat, steps, options, groups, levels, mapped_levels, mapped_eles
+    global scores, rel_mat, steps, options, groups, levels, mapped_levels, mapped_eles, av_axis
+    av_axis = 0
     scores = p_scores
     rel_mat = p_rel_mat
     groups = p_groups
@@ -202,6 +196,10 @@ def mcts_init(p_scores, p_rel_mat, p_groups, p_mapped):
             mapped_levels[it["level"]] = it["ele"]
         else:
             mapped_levels[level_map[it["level"]]] = it["ele"]
+    for it in rel_mat[0]:
+        if it > 0.01:
+            av_axis = 2
+            break
     steps = len(levels)
     options = len(rel_mat)
     print(levels)
