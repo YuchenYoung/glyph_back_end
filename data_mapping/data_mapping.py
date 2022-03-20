@@ -15,6 +15,29 @@ def fill_in_nan(matrix):
     return matrix
 
 
+def get_similarity(theme, props, groups, types):
+    print('now in function get')
+    print(theme)
+    print(props)
+    print(groups)
+    print(types)
+    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
+    print('now finish getting')
+    print(props)
+    print(similarity)
+    dic_similarity = {}
+    for i in range(len(props)):
+        dic_similarity[props[i]] = similarity[i]
+    for i in range(len(groups)):
+        val = 0
+        for it in groups[i]:
+            pos = props.index(it)
+            val += similarity[pos]
+        val /= len(groups[i])
+        dic_similarity[f'group{i}'] = val
+    return props, similarity, dic_similarity
+
+
 def format_mapping(props, groups, matches, similarity, rel_mat):
     print(matches)
     single_props = []
@@ -81,11 +104,11 @@ def data_mapping_main(theme, props, types, svgs):
     return mapping_res
 
 
-def data_mapping_multi(theme, props, group_props, types, svgs_list, mapped):
+def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, mapped):
     print('====== now calculate similarity =======')
-    t_semantic_before = time.perf_counter()
-    similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
-    t_semantic_after = time.perf_counter()
+    # t_semantic_before = time.perf_counter()
+    # similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
+    # t_semantic_after = time.perf_counter()
     groups = []
     for lst in group_props:
         cur_group = []
@@ -101,7 +124,7 @@ def data_mapping_multi(theme, props, group_props, types, svgs_list, mapped):
     all_mapping = []
     all_score = []
     best_mapping = []
-    semantic_time = t_semantic_after - t_semantic_before
+    semantic_time = 0
     cal_time = []
     mapped_idx = []
     for it in mapped:
@@ -124,6 +147,8 @@ def data_mapping_multi(theme, props, group_props, types, svgs_list, mapped):
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()
+        # print(groups)
+        # print(mapped_idx)
         match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups, mapped_idx)
         t_match_after = time.perf_counter()
         print(f'{i} {score}')

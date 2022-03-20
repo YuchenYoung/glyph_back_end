@@ -52,10 +52,13 @@ class MCTSTree(object):
         if new_op < 0:
             children_used = list(map(lambda u: u.option, node.children))
             used_ops = node.fin_options + children_used
-            av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(options + 1)))
+            st = 0
+            if cur_level < len(groups):
+                st = 1
+            av_ops = list(filter(lambda u: u not in used_ops and u not in mapped_eles, range(st, options + 1)))
             if options not in children_used and options not in av_ops:
                 av_ops.append(options)
-            if 0 not in av_ops and node.axis < 2:
+            if cur_level >= len(groups) and 0 not in av_ops and node.axis < 2:
                 av_ops.append(0)
             new_op = av_ops[random.randint(0, len(av_ops) - 1)]
         new_node = Node()
@@ -76,9 +79,12 @@ class MCTSTree(object):
             cur_level = len(op_list)
             new_op = mapped_levels[cur_level]
             if new_op < 0:
-                av_ops = list(filter(lambda u: u not in op_list and u not in mapped_eles, range(options)))
+                st = 0
+                if cur_level < len(groups):
+                    st = 1
+                av_ops = list(filter(lambda u: u not in op_list and u not in mapped_eles, range(st, options)))
                 av_ops.append(options)
-                if 0 not in av_ops and axis < 2:
+                if cur_level >= len(groups) and 0 not in av_ops and axis < 2:
                     av_ops.append(0)
                 new_op = av_ops[random.randint(0, len(av_ops) - 1)]
             if new_op == 0:

@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('', views.mapping_view),
-    path('mul/', views.mapping_multi)
+    path('mul/', views.mapping_multi),
+    path('similarity/', views.props_similarity)
 ]
