@@ -13,6 +13,8 @@ def normalize_and_sort(lst, props, types):
         val = (lst[i] - min_val) / (max_val - min_val)
         if types[props[i]] == 'time' or types[props[i]] == 'geography':
             val == 1
+        if "Item" in props[i] or "Object" in props[i]:
+            val == 1
         new_list.append({"prop": props[i], "val": val})
     new_list.sort(key=(lambda d: d["val"]), reverse=True)
     for i in range(len(lst)):

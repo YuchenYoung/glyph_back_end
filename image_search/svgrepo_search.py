@@ -50,7 +50,10 @@ def get_cached_svgs(words, img_num):
     print('get svg cached!!')
     for i in range(int(img_num)):
         cached_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cached_svgs', words, f'{i}.svg')
-        with open(cached_file, 'r') as f:
-            svg_list.append(f.read())
+        try:
+            with open(cached_file, 'r') as f:
+                svg_list.append(f.read())
+        except Exception as e:
+            print(f'no file {i}.svg')
     print(len(svg_list))
     return url_list, svg_list

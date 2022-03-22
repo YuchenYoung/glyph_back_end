@@ -54,6 +54,7 @@ def format_mapping(props, groups, matches, similarity, rel_mat):
         if i < len(groups):
             cur_map['is_group'] = True
             cur_map['group'] = groups[i]
+            cur_map['prop'] = f'group{i}'
         else:
             cur_map['is_group'] = False
             cur_map['prop'] = single_props[i]

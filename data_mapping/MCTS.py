@@ -5,6 +5,7 @@ import numpy as np
 
 global scores, rel_mat, steps, options, groups, levels, mapped_levels, mapped_eles, av_axis
 para_c = 1 / math.sqrt(2.0)
+# para_c = 6
 
 
 class Node(object):
@@ -20,7 +21,7 @@ class Node(object):
     def ucb(self):
         return self.value / self.visit_times + para_c * math.sqrt(math.log(self.parent.visit_times) / self.visit_times)
 
-    def get_best_child(self):
+    def get_best_child_ucb(self):
         best_child = None
         max_val = -10000
         for it in self.children:
@@ -30,11 +31,21 @@ class Node(object):
                 best_child = it
         return best_child
 
+    def get_best_child_value(self):
+        best_child = None
+        max_val = -10000
+        for it in self.children:
+            cur_val = it.value
+            if cur_val >= max_val:
+                max_val = cur_val
+                best_child = it
+        return best_child
+
 
 class MCTSTree(object):
     def __init__(self):
         self.root = Node()
-        self.max_round = 100000
+        self.max_round = 50000
 
     def judge_to_expansion(self, node, cur_level):
         if cur_level < len(mapped_levels) and mapped_levels[cur_level] >= 0:
@@ -62,7 +73,7 @@ class MCTSTree(object):
             #     break
             if self.judge_to_expansion(cur, cur_level):
                 break
-            cur = cur.get_best_child()
+            cur = cur.get_best_child_ucb()
         return cur
 
     def expansion(self, node):
@@ -140,7 +151,7 @@ class MCTSTree(object):
         op_list = []
         cur = self.root
         while len(cur.children) > 0:
-            cur = cur.get_best_child()
+            cur = cur.get_best_child_value()
             op_list.append(cur.option)
         value = 0
         match_cnt = 0
