@@ -2,6 +2,7 @@ __pycache__
 *.log
 *.pid
 *.ini
+*.bak
 .vscode
 .DS_Store
 .idea

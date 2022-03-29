@@ -1,3 +1,4 @@
+import imp
 from tokenize import group
 from . import clip_explainability
 from . import semantic_similarity
@@ -5,6 +6,7 @@ from . import MCTS
 from . import KM
 import math
 import time
+import numpy as np
 
 
 def fill_in_nan(matrix):
@@ -31,6 +33,15 @@ def get_similarity(theme, props, groups, types):
         dic_similarity[f'group{i}'] = val
     return props, similarity, dic_similarity
 
+
+def get_cached_matrix(theme, idx):
+    try:
+        data = np.load('data_mapping/cached_matrix.npz')
+        return data[f'{theme}{idx}']
+    except Exception as e:
+        print(e)
+        return np.array([1], dtype='float')
+    
 
 def format_mapping(props, groups, matches, similarity, rel_mat):
     print(matches)
@@ -99,7 +110,7 @@ def data_mapping_main(theme, props, types, svgs):
     return mapping_res
 
 
-def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, mapped):
+def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, mapped, first_pos, cached_matrix):
     print('====== now calculate similarity =======')
     # t_semantic_before = time.perf_counter()
     # similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
@@ -121,13 +132,20 @@ def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, 
     best_mapping = []
     semantic_time = 0
     cal_time = []
+    types_idx = []
+    for it in props:
+        cur_type = 0
+        if types[it] == "category":
+            cur_type = 1
+        elif types[it] == "small_range":
+            cur_type = -1
+        types_idx.append(cur_type)
     mapped_idx = []
     for it in mapped:
         if it['is_group'] == True:
             mapped_idx.append({"level": int(it['prop']), "ele": int(it['ele']), "is_group": True})
         else:
             mapped_idx.append({"level": props.index(it['prop']), "ele": int(it['ele']), "is_group": False})
-
     for i in range(len(svgs_list)):
         print(f"now is image {i}")
         # cur_similarity = similarity[:int(len(svgs_list[i])*1.2)]
@@ -135,7 +153,10 @@ def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, 
         cur_similarity = similarity
         cur_props = props
         t_matrix_before = time.perf_counter()
-        rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, cur_props, svgs_list[i]))
+        if cached_matrix:
+            rel_matrix = get_cached_matrix(theme, first_pos + i)
+        else:
+            rel_matrix = fill_in_nan(clip_explainability.get_rel_props_elements(theme, cur_props, svgs_list[i]))
         for j in range(len(props)):
             if types[props[j]] == 'time' or types[props[j]] == 'geography':
                 rel_matrix[0][j] = 1.0
@@ -143,12 +164,15 @@ def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, 
                 rel_matrix[0][j] = 1.0
             else:
                 rel_matrix[0][j] = 0.00
+            if rel_matrix[0][j] > 0.99:
+                for k in range(1, rel_matrix.shape[0]):
+                    rel_matrix[k][j] = 0.01
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()
         # print(groups)
         # print(mapped_idx)
-        match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups, mapped_idx)
+        match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups, types_idx, mapped_idx)
         t_match_after = time.perf_counter()
         print(f'{i} {score}')
         cur_mapping = format_mapping(cur_props, group_props, match_eles, cur_similarity, rel_matrix)
