@@ -110,7 +110,7 @@ def data_mapping_main(theme, props, types, svgs):
     return mapping_res
 
 
-def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, mapped, first_pos, cached_matrix):
+def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, mapped, first_pos, cached_matrix, nice):
     print('====== now calculate similarity =======')
     # t_semantic_before = time.perf_counter()
     # similarity, props = semantic_similarity.get_theme_props_similarity(theme, props, types)
@@ -170,8 +170,8 @@ def data_mapping_multi(theme, props, similarity, group_props, types, svgs_list, 
         t_matrix_after = time.perf_counter()
         print(rel_matrix)
         t_match_before = time.perf_counter()
-        # print(groups)
-        # print(mapped_idx)
+        if nice:
+            rel_matrix *= 3
         match_eles, score = MCTS.mcts_search(cur_similarity, rel_matrix, groups, types_idx, mapped_idx)
         t_match_after = time.perf_counter()
         print(f'{i} {score}')

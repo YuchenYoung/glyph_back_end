@@ -17,7 +17,7 @@ def props_similarity(request):
     theme = front_data.get("theme")
     groups = front_data.get("groups")
 
-    props, similarity, dic_similarity = data_mapping.get_similarity(theme, props[1:], groups, data_types);
+    props, similarity, dic_similarity = data_mapping.get_similarity(theme, props, groups, data_types)
     res_dic = {
         'props': props,
         'similarity': similarity,
@@ -60,8 +60,9 @@ def mapping_multi(request):
     mapped = front_data.get("mapped")
     first_pos = front_data.get("first")
     cached_matrix = front_data.get("cachedMatrix")
+    nice = front_data.get("nice")
     # mapper = data_mapping.data_mapping_km(content, data_props[1:], [], svg_list)
-    best_img, score, mapper, scores, mappers, times  = data_mapping.data_mapping_multi(content, data_props, similarity, groups, data_types, svgs_list, mapped, first_pos, cached_matrix)
+    best_img, score, mapper, scores, mappers, times  = data_mapping.data_mapping_multi(content, data_props, similarity, groups, data_types, svgs_list, mapped, first_pos, cached_matrix, nice)
     # mapper = { "status": 'reveived'}
     res = {
         "best_img": best_img, 
